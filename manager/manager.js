@@ -1,15 +1,12 @@
 'use strict';
 
-const events = require('./events');
-
+require('dotenv').config();
+const io = require('socket.io-client');
+const host = `http://localhost:${process.env.PORT}/`;
+const systemConnection = io.connect(host);
 
 const { v4: uuid } = require('uuid');
-
-require('./system');
-require('./pilot');
 const { faker } = require('@faker-js/faker');
-
-// events.on('new-flight', setInterval(notifyFlight, 3000));
 
 setInterval(() => {
     console.log('------------------------------------------------------------');
@@ -21,11 +18,11 @@ setInterval(() => {
         pilot: `${faker.name.firstName()} ${faker.name.lastName()}`,
         destination: faker.address.city(),
     }
-    events.emit('new-flight', Details);
+    systemConnection.emit('new-flight', Details);
 }, 10000);
 
 
-events.on('arrived', notifyArrived);
+systemConnection.on('arrived', notifyArrived);
 
 function notifyArrived(payLoad) {
     console.log(`Manager: we’re greatly thankful for the amazing flight, ${payLoad['pilot']}`);
