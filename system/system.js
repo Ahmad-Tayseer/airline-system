@@ -46,5 +46,6 @@ ioServer.on("connection", (socket) => {
             time: new Date().toLocaleString(),
             Details: payLoad,
         });
+        ioServer.emit('arrived', payLoad);
     }
 });
