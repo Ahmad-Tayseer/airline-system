@@ -7,6 +7,16 @@ let host2 = `http://localhost:${process.env.PORT}/airline`;
 const systemConnection = io.connect(host);
 const airlineConnection = io.connect(host2);
 
+systemConnection.emit('get-all');
+
+systemConnection.on('flight', (flight) => {
+    console.log(`Pilot: Sorry i didn't catch this flight ID ${flight.id}`);
+    console.log(flight);
+    systemConnection.emit('delete', flight);
+    console.log('flight seen and deleted');
+    console.log('*****************************************************');
+})
+
 systemConnection.on('new-flight', notifyTookOff);
 
 function notifyTookOff(payLoad) {

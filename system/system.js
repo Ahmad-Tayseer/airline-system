@@ -6,6 +6,14 @@ const PORT = process.env.PORT || 3030;
 const socket = require('socket.io');
 const ioServer = socket(PORT);
 
+const { v4: uuid } = require('uuid');
+
+let queue = {
+    flights: {
+
+    }
+}
+
 const airline = ioServer.of('/airline');
 airline.on("connection", (socket) => {
     console.log('connected to airline ', socket.id);
@@ -36,7 +44,36 @@ ioServer.on("connection", (socket) => {
             Details: payLoad,
         });
         ioServer.emit('new-flight', payLoad);
+
+        let id = uuid();
+
+        let details = {
+            event: 'new-flight',
+            time: new Date().toLocaleString(),
+            Details: payLoad,
+        }
+
+        queue.flights[id] = details;
     }
+
+
+    socket.on('get-all', () => {
+        console.log('get all flights');
+        
+        Object.keys(queue.flights).forEach((id) => {
+            socket.emit('flight', {
+                id: id,
+                details: queue.flights[id],
+            })
+        })
+    })
+
+    socket.on('delete', (flight) => {
+        delete queue.flights[flight.id];
+        console.log('flight seen and deleted');
+        console.log(queue.flights[flight.id]);
+    })
+
 
     socket.on('arrived', notifyArrived);
 
